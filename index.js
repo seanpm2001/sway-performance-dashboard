@@ -19,12 +19,19 @@ const main = async () => {
 
 
   const setData = await Promise.all(setNames.map(async setName => {
-    const data = await Promise.all(commits.map(async (commit) => {
-      const perfData = await fetchPerformanceData(commit.sha, setName);
-      perfData.commit = commit;
-      perfData.date = new Date(commit.commit.author.date);
-      return perfData;
-    }));
+    const data = (await Promise.all(commits.map(async (commit) => {
+      try {
+        const perfData = await fetchPerformanceData(commit.sha, setName);
+        perfData.commit = commit;
+        perfData.date = new Date(commit.commit.author.date);
+        return perfData;
+      } catch (e) {
+        //console.log(e);
+        return null;
+      }
+    }))).filter(p => p !== null);
+
+    console.log(data);
 
     // ensure compatibility between data formats
     if (data[0] !== undefined && data[0].metrics !== undefined && data[0].elapsed === undefined) {
